@@ -1,5 +1,7 @@
 # STAC Iceberg Extension
 
+> **Work in Progress** — This extension is under active development. Field names, schema, and the extension URL may change before the first stable release.
+
 - **Title:** Iceberg
 - **Identifier:** <https://portolan-sdi.github.io/stac-iceberg-extension/v1.0.0/schema.json>
 - **Field Name Prefix:** iceberg
