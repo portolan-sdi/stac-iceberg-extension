@@ -42,6 +42,19 @@ Collections using this extension should include a data asset with `type: "applic
 
 This extension is designed to complement the [STAC Table Extension](https://github.com/stac-extensions/table), which provides schema-level metadata (`table:columns`, `table:row_count`, `table:primary_geometry`). The Iceberg Extension adds catalog connectivity and versioning information on top.
 
+## Building and Testing
+
+This repository uses [stac-node-validator](https://github.com/stac-utils/stac-node-validator) to validate examples against the schema:
+
+```bash
+npm install
+npm test
+```
+
+## Reference Implementation
+
+[Portolake](https://github.com/portolan-sdi/portolake) generates STAC Collections with Iceberg extension fields from live Iceberg tables via PyIceberg. See `portolake/stac_generator.py`.
+
 ## Contributing
 
 This extension is maintained by the [Portolan SDI](https://github.com/portolan-sdi) project. Issues and pull requests are welcome.
