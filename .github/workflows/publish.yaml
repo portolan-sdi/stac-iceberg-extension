@@ -21,27 +21,28 @@ jobs:
         id: version
         run: echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
 
-      - name: Download existing Pages content
-        continue-on-error: true
-        run: |
-          mkdir -p _site
-          # Fetch existing published versions (if any) to preserve them
-          curl -sL https://portolan-sdi.github.io/stac-iceberg-extension/versions.json -o _site/versions.json 2>/dev/null || echo '[]' > _site/versions.json
-          # Download each existing version's schema
-          for ver in $(jq -r '.[]' _site/versions.json 2>/dev/null); do
-            mkdir -p "_site/${ver}"
-            curl -sL "https://portolan-sdi.github.io/stac-iceberg-extension/${ver}/schema.json" -o "_site/${ver}/schema.json" 2>/dev/null || true
-          done
-
-      - name: Add new version
+      - name: Build site with new version
         run: |
           VERSION="${{ steps.version.outputs.tag }}"
           mkdir -p "_site/${VERSION}"
           cp json-schema/schema.json "_site/${VERSION}/"
 
-          # Update versions manifest
-          jq --arg v "$VERSION" '. + [$v] | unique' _site/versions.json > _site/versions.json.tmp
-          mv _site/versions.json.tmp _site/versions.json
+          # Try to fetch existing versions manifest, default to empty array
+          if curl -sfL https://portolan-sdi.github.io/stac-iceberg-extension/versions.json -o /tmp/versions.json 2>/dev/null; then
+            # Download each existing version's schema to preserve them
+            for ver in $(jq -r '.[]' /tmp/versions.json 2>/dev/null); do
+              if [ "$ver" != "$VERSION" ]; then
+                mkdir -p "_site/${ver}"
+                curl -sfL "https://portolan-sdi.github.io/stac-iceberg-extension/${ver}/schema.json" \
+                  -o "_site/${ver}/schema.json" 2>/dev/null || true
+              fi
+            done
+            # Add new version to manifest
+            jq --arg v "$VERSION" '. + [$v] | unique' /tmp/versions.json > _site/versions.json
+          else
+            # First deployment - create fresh manifest
+            echo "[\"${VERSION}\"]" > _site/versions.json
+          fi
 
           # Create index page listing all versions
           cat > _site/index.html << 'HTMLEOF'
