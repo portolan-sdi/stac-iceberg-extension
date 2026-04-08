@@ -1,0 +1,56 @@
+{
+  "type": "Collection",
+  "id": "boundaries",
+  "stac_version": "1.0.0",
+  "stac_extensions": [
+    "https://stac-extensions.github.io/table/v1.2.0/schema.json",
+    "https://portolan-sdi.github.io/stac-iceberg-extension/v1.0.0/schema.json"
+  ],
+  "title": "Administrative Boundaries",
+  "description": "Administrative boundary polygons stored as an Apache Iceberg table in GeoParquet format, managed by Portolake.",
+  "license": "CC-BY-4.0",
+  "extent": {
+    "spatial": {
+      "bbox": [[-180, -90, 180, 90]]
+    },
+    "temporal": {
+      "interval": [["2024-01-01T00:00:00Z", null]]
+    }
+  },
+  "links": [
+    {
+      "rel": "root",
+      "href": "../catalog.json",
+      "type": "application/json"
+    },
+    {
+      "rel": "self",
+      "href": "./collection.json",
+      "type": "application/json"
+    }
+  ],
+  "table:columns": [
+    { "name": "id", "type": "string" },
+    { "name": "name", "type": "string" },
+    { "name": "admin_level", "type": "int32" },
+    { "name": "geometry", "type": "binary" }
+  ],
+  "table:row_count": 4326,
+  "table:primary_geometry": "geometry",
+  "iceberg:catalog_type": "rest",
+  "iceberg:catalog_uri": "https://biglake.googleapis.com/iceberg/v1beta",
+  "iceberg:table_id": "portolake.boundaries",
+  "iceberg:format_version": 2,
+  "iceberg:current_snapshot_id": 8839726095894618988,
+  "iceberg:partition_spec": [
+    { "field": "geohash_3", "transform": "identity" }
+  ],
+  "assets": {
+    "data": {
+      "href": "gs://example-bucket/portolake/boundaries",
+      "type": "application/x-iceberg",
+      "roles": ["data"],
+      "description": "Apache Iceberg table — use PyIceberg, DuckDB iceberg_scan(), or Spark to query"
+    }
+  }
+}

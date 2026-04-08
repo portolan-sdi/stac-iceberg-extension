@@ -1,0 +1,19 @@
+{
+  "name": "stac-iceberg-extension",
+  "version": "1.0.0",
+  "description": "STAC Iceberg Extension — Apache Iceberg table metadata for STAC Collections",
+  "scripts": {
+    "test": "npm run check-markdown && npm run check-examples",
+    "check-markdown": "remark . --frail",
+    "check-examples": "stac-node-validator examples/collection.json --schemaMap https://portolan-sdi.github.io/stac-iceberg-extension/v1.0.0/schema.json=./json-schema/schema.json",
+    "format-examples": "stac-node-validator examples/collection.json --schemaMap https://portolan-sdi.github.io/stac-iceberg-extension/v1.0.0/schema.json=./json-schema/schema.json --format"
+  },
+  "devDependencies": {
+    "stac-node-validator": "^1.3.2",
+    "remark-cli": "^12.0.0",
+    "remark-lint": "^10.0.0",
+    "remark-preset-lint-consistent": "^6.0.0",
+    "remark-preset-lint-recommended": "^7.0.0",
+    "remark-validate-links": "^13.0.0"
+  }
+}
