@@ -9,7 +9,11 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
 
@@ -17,9 +21,66 @@ jobs:
         id: version
         run: echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
 
-      - name: Publish to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./json-schema
-          destination_dir: ${{ steps.version.outputs.tag }}
+      - name: Download existing Pages content
+        continue-on-error: true
+        run: |
+          mkdir -p _site
+          # Fetch existing published versions (if any) to preserve them
+          curl -sL https://portolan-sdi.github.io/stac-iceberg-extension/versions.json -o _site/versions.json 2>/dev/null || echo '[]' > _site/versions.json
+          # Download each existing version's schema
+          for ver in $(jq -r '.[]' _site/versions.json 2>/dev/null); do
+            mkdir -p "_site/${ver}"
+            curl -sL "https://portolan-sdi.github.io/stac-iceberg-extension/${ver}/schema.json" -o "_site/${ver}/schema.json" 2>/dev/null || true
+          done
+
+      - name: Add new version
+        run: |
+          VERSION="${{ steps.version.outputs.tag }}"
+          mkdir -p "_site/${VERSION}"
+          cp json-schema/schema.json "_site/${VERSION}/"
+
+          # Update versions manifest
+          jq --arg v "$VERSION" '. + [$v] | unique' _site/versions.json > _site/versions.json.tmp
+          mv _site/versions.json.tmp _site/versions.json
+
+          # Create index page listing all versions
+          cat > _site/index.html << 'HTMLEOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>STAC Iceberg Extension</title>
+            <style>
+              body { font-family: system-ui, sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; }
+              h1 { color: #333; }
+              ul { list-style: none; padding: 0; }
+              li { margin: 0.5rem 0; }
+              a { color: #0066cc; }
+            </style>
+          </head>
+          <body>
+            <h1>STAC Iceberg Extension</h1>
+            <p>JSON Schema for the <a href="https://github.com/portolan-sdi/stac-iceberg-extension">STAC Iceberg Extension</a>.</p>
+            <h2>Available Versions</h2>
+            <ul id="versions"></ul>
+            <script>
+              fetch('versions.json')
+                .then(r => r.json())
+                .then(versions => {
+                  const ul = document.getElementById('versions');
+                  versions.sort().reverse().forEach(v => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<a href="${v}/schema.json">${v}</a>`;
+                    ul.appendChild(li);
+                  });
+                });
+            </script>
+          </body>
+          </html>
+          HTMLEOF
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
