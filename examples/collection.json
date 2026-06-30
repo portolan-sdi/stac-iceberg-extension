@@ -1,20 +1,21 @@
 {
   "type": "Collection",
-  "id": "boundaries",
+  "id": "kunta_2025",
   "stac_version": "1.0.0",
   "stac_extensions": [
+    "https://stac-extensions.github.io/projection/v2.0.0/schema.json",
     "https://stac-extensions.github.io/table/v1.2.0/schema.json",
     "https://portolan-sdi.github.io/stac-iceberg-extension/v1.0.0/schema.json"
   ],
-  "title": "Administrative Boundaries",
-  "description": "Administrative boundary polygons stored as an Apache Iceberg table in GeoParquet format, managed by Portolake.",
+  "title": "Finnish Municipalities 2025",
+  "description": "Municipality polygons for Finland, stored as an Apache Iceberg v3 table over GeoParquet in the native ETRS89 / TM35FIN CRS, published as a static catalog on object storage.",
   "license": "CC-BY-4.0",
   "extent": {
     "spatial": {
-      "bbox": [[-180, -90, 180, 90]]
+      "bbox": [[19.08, 58.84, 31.59, 70.09]]
     },
     "temporal": {
-      "interval": [["2024-01-01T00:00:00Z", null]]
+      "interval": [["2025-01-01T00:00:00Z", null]]
     }
   },
   "links": [
@@ -29,28 +30,29 @@
       "type": "application/json"
     }
   ],
+  "proj:code": "EPSG:3067",
   "table:columns": [
-    { "name": "id", "type": "string" },
-    { "name": "name", "type": "string" },
-    { "name": "admin_level", "type": "int32" },
-    { "name": "geometry", "type": "binary" }
+    { "name": "id", "type": "int64" },
+    { "name": "kunta", "type": "double" },
+    { "name": "nimi", "type": "string" },
+    { "name": "geometry", "type": "geometry" }
   ],
-  "table:row_count": 4326,
+  "table:row_count": 308,
   "table:primary_geometry": "geometry",
-  "iceberg:catalog_type": "rest",
-  "iceberg:catalog_uri": "https://biglake.googleapis.com/iceberg/v1beta",
-  "iceberg:table_id": "portolake.boundaries",
-  "iceberg:format_version": 2,
-  "iceberg:current_snapshot_id": 8839726095894618988,
-  "iceberg:partition_spec": [
-    { "field": "geohash_3", "transform": "identity" }
-  ],
+  "iceberg:catalog_type": "static",
+  "iceberg:catalog_uri": "https://storage.googleapis.com/carto-portolan-cats/finland",
+  "iceberg:rest_prefix": "sdi",
+  "iceberg:authorization_type": "none",
+  "iceberg:table_id": "v3.kunta_2025",
+  "iceberg:metadata_location": "https://storage.googleapis.com/carto-portolan-cats/finland/data/v3/kunta_2025/metadata/v1.metadata.json",
+  "iceberg:format_version": 3,
+  "iceberg:current_snapshot_id": "1",
   "assets": {
-    "data": {
-      "href": "gs://example-bucket/portolake/boundaries",
-      "type": "application/x-iceberg",
-      "roles": ["data"],
-      "description": "Apache Iceberg table — use PyIceberg, DuckDB iceberg_scan(), or Spark to query"
+    "iceberg": {
+      "href": "https://storage.googleapis.com/carto-portolan-cats/finland/data/v3/kunta_2025/metadata/v1.metadata.json",
+      "type": "application/vnd.apache.iceberg+json",
+      "roles": ["data", "metadata"],
+      "description": "Apache Iceberg v3 table metadata. Read directly with DuckDB iceberg_scan() or PyIceberg StaticTable, or ATTACH the static REST surface at iceberg:catalog_uri."
     }
   }
 }
