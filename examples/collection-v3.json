@@ -1,0 +1,58 @@
+{
+  "type": "Collection",
+  "id": "tunnels",
+  "stac_version": "1.0.0",
+  "stac_extensions": [
+    "https://portolan-sdi.github.io/stac-iceberg-extension/v1.0.0/schema.json"
+  ],
+  "title": "Tunnels",
+  "description": "Tunnel centerlines stored as an Apache Iceberg format-version 3 table, using the V3 geometry column type carrying the native CRS.",
+  "license": "CC-BY-4.0",
+  "extent": {
+    "spatial": {
+      "bbox": [
+        [
+          -3.8,
+          40.3,
+          -3.6,
+          40.5
+        ]
+      ]
+    },
+    "temporal": {
+      "interval": [
+        [
+          "2026-01-01T00:00:00Z",
+          null
+        ]
+      ]
+    }
+  },
+  "links": [
+    {
+      "rel": "root",
+      "href": "../catalog.json",
+      "type": "application/json"
+    },
+    {
+      "rel": "self",
+      "href": "./collection.json",
+      "type": "application/json"
+    }
+  ],
+  "iceberg:catalog_type": "rest",
+  "iceberg:catalog_uri": "https://catalog.example.com/iceberg",
+  "iceberg:table_id": "collections.tunnels",
+  "iceberg:format_version": 3,
+  "iceberg:current_snapshot_id": 1,
+  "assets": {
+    "data": {
+      "href": "https://catalog.example.com/iceberg/data/collections/tunnels",
+      "type": "application/x-iceberg",
+      "roles": [
+        "data"
+      ],
+      "description": "Apache Iceberg V3 table \u2014 use PyIceberg, DuckDB iceberg_scan(), or Spark to query"
+    }
+  }
+}

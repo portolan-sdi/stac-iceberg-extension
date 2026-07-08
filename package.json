@@ -5,8 +5,8 @@
   "scripts": {
     "test": "npm run check-markdown && npm run check-examples",
     "check-markdown": "remark . --frail",
-    "check-examples": "stac-node-validator examples/collection.json --schemaMap https://portolan-sdi.github.io/stac-iceberg-extension/v1.0.0/schema.json=./json-schema/schema.json",
-    "format-examples": "stac-node-validator examples/collection.json --schemaMap https://portolan-sdi.github.io/stac-iceberg-extension/v1.0.0/schema.json=./json-schema/schema.json --format"
+    "check-examples": "stac-node-validator examples/*.json --schemaMap https://portolan-sdi.github.io/stac-iceberg-extension/v1.0.0/schema.json=./json-schema/schema.json",
+    "format-examples": "stac-node-validator examples/*.json --schemaMap https://portolan-sdi.github.io/stac-iceberg-extension/v1.0.0/schema.json=./json-schema/schema.json --format"
   },
   "devDependencies": {
     "stac-node-validator": "^1.3.2",

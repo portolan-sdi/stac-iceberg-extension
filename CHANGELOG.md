@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Allow `iceberg:format_version: 3`, tracking the ratified Apache Iceberg V3
+  table spec (deletion vectors, row lineage, and new column types including
+  `geometry`/`geography` and `variant`).
+
 ## [v1.0.0] - 2026-04-07
 
 ### Added

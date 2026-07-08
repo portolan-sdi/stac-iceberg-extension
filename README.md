@@ -17,7 +17,7 @@ This extension adds [Apache Iceberg](https://iceberg.apache.org/) table metadata
 | iceberg:catalog_type | string | Iceberg catalog backend type (`sql`, `rest`, `glue`, `hive`, `dynamodb`) |
 | iceberg:catalog_uri | string | Connection URI for the Iceberg catalog |
 | iceberg:table_id | string | Fully qualified table identifier (e.g., `portolake.boundaries`) |
-| iceberg:format_version | integer | Iceberg format version (1 or 2) |
+| iceberg:format_version | integer | Iceberg format version (1, 2, or 3) |
 | iceberg:current_snapshot_id | integer | Current snapshot ID for reproducibility |
 | iceberg:partition_spec | \[object\] | Partition fields and transforms (e.g., `[{"field": "geohash_3", "transform": "identity"}]`) |
 
