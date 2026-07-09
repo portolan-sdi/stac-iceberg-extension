@@ -40,16 +40,16 @@
   "table:row_count": 308,
   "table:primary_geometry": "geometry",
   "iceberg:catalog_type": "static",
-  "iceberg:catalog_uri": "https://storage.googleapis.com/carto-portolan-cats/finland",
+  "iceberg:catalog_uri": "https://storage.googleapis.com/example-bucket/finland",
   "iceberg:rest_prefix": "sdi",
   "iceberg:authorization_type": "none",
   "iceberg:table_id": "v3.kunta_2025",
-  "iceberg:metadata_location": "https://storage.googleapis.com/carto-portolan-cats/finland/data/v3/kunta_2025/metadata/v1.metadata.json",
+  "iceberg:metadata_location": "https://storage.googleapis.com/example-bucket/finland/data/v3/kunta_2025/metadata/v1.metadata.json",
   "iceberg:format_version": 3,
   "iceberg:current_snapshot_id": "1",
   "assets": {
     "iceberg": {
-      "href": "https://storage.googleapis.com/carto-portolan-cats/finland/data/v3/kunta_2025/metadata/v1.metadata.json",
+      "href": "https://storage.googleapis.com/example-bucket/finland/data/v3/kunta_2025/metadata/v1.metadata.json",
       "type": "application/vnd.apache.iceberg+json",
       "roles": ["data", "metadata"],
       "description": "Apache Iceberg v3 table metadata. Read directly with DuckDB iceberg_scan() or PyIceberg StaticTable, or ATTACH the static REST surface at iceberg:catalog_uri."

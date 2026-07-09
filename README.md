@@ -34,7 +34,7 @@ How a consumer reaches the table depends on `iceberg:catalog_type`, and the asse
 {
   "assets": {
     "iceberg": {
-      "href": "https://storage.googleapis.com/carto-portolan-cats/finland/data/v3/kunta_2025/metadata/v1.metadata.json",
+      "href": "https://storage.googleapis.com/example-bucket/finland/data/v3/kunta_2025/metadata/v1.metadata.json",
       "type": "application/vnd.apache.iceberg+json",
       "roles": ["data", "metadata"],
       "description": "Apache Iceberg v3 table metadata. Read directly with DuckDB iceberg_scan() or PyIceberg StaticTable, or ATTACH the static REST surface at iceberg:catalog_uri."
@@ -76,7 +76,7 @@ npm test
 
 ## Reference Implementation
 
-The Portolan catalog pipeline writes static Iceberg v3 tables and a static REST surface from published GeoParquet via PyIceberg, and emits STAC Collections carrying these fields. See `lib/cats/iceberg.py` and `lib/cats/_iceberg_table.py` in the catalog pipeline. A live example is the Finland catalog under `https://storage.googleapis.com/carto-portolan-cats/finland`.
+The Portolan catalog pipeline writes static Iceberg v3 tables and a static REST surface from published GeoParquet via PyIceberg, and emits STAC Collections carrying these fields. See `lib/cats/iceberg.py` and `lib/cats/_iceberg_table.py` in the catalog pipeline. The `examples/collection.json` Finland catalog in this repo is representative of the output (URLs are placeholders).
 
 ## Contributing
 
