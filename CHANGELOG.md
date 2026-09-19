@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [v1.1.0] - 2026-09-19
 
 ### Added
 
@@ -17,6 +17,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   connect to a static or remote REST catalog.
 - `static` value for `iceberg:catalog_type`, for serverless catalogs on object
   storage.
+- `iceberg:metadata_location` is now required when `iceberg:catalog_type` is
+  `static`. A static catalog has no server to resolve the current metadata.
+- A second example, `examples/portolan-collection.json`, for the Portolan
+  convention. The GeoParquet file keeps the `data` role and the Iceberg metadata
+  asset carries the `metadata` role alone.
+- Every released schema is tracked under `json-schema/v<version>/schema.json`.
+  The publish workflow builds the site from those files. It no longer downloads
+  the live site to preserve older versions.
+- `npm run check-version` fails when the `package.json` version, the schema
+  `$id`, and the schema URIs in the README and the examples disagree.
 
 ### Changed
 

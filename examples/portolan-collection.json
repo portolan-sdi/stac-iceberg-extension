@@ -1,0 +1,63 @@
+{
+  "type": "Collection",
+  "id": "boston-open-space",
+  "stac_version": "1.0.0",
+  "stac_extensions": [
+    "https://stac-extensions.github.io/projection/v2.0.0/schema.json",
+    "https://stac-extensions.github.io/table/v1.2.0/schema.json",
+    "https://portolan-sdi.github.io/stac-iceberg-extension/v1.1.0/schema.json"
+  ],
+  "title": "Boston Open Space",
+  "description": "Open space polygons for the City of Boston, published as GeoParquet and also readable as a static Apache Iceberg v3 table over the same files.",
+  "license": "CC-BY-4.0",
+  "extent": {
+    "spatial": {
+      "bbox": [[-71.191, 42.227, -70.986, 42.396]]
+    },
+    "temporal": {
+      "interval": [["2024-01-01T00:00:00Z", null]]
+    }
+  },
+  "links": [
+    {
+      "rel": "root",
+      "href": "../catalog.json",
+      "type": "application/json"
+    },
+    {
+      "rel": "self",
+      "href": "./collection.json",
+      "type": "application/json"
+    }
+  ],
+  "proj:code": "EPSG:4326",
+  "table:columns": [
+    { "name": "OBJECTID", "type": "int64" },
+    { "name": "SITE_NAME", "type": "string" },
+    { "name": "ACRES", "type": "double" },
+    { "name": "geometry", "type": "geometry" }
+  ],
+  "table:row_count": 1012,
+  "table:primary_geometry": "geometry",
+  "iceberg:catalog_type": "static",
+  "iceberg:table_id": "portolan.boston_open_space",
+  "iceberg:metadata_location": "./iceberg/metadata/v1.metadata.json",
+  "iceberg:format_version": 3,
+  "iceberg:current_snapshot_id": "4358210771845678999",
+  "assets": {
+    "data": {
+      "href": "./boston-open-space.parquet",
+      "type": "application/vnd.apache.parquet",
+      "roles": ["data"],
+      "title": "GeoParquet",
+      "description": "GeoParquet 2.0 file with the Parquet GEOMETRY logical type. This is the only copy of the data."
+    },
+    "iceberg": {
+      "href": "./iceberg/metadata/v1.metadata.json",
+      "type": "application/vnd.apache.iceberg+json",
+      "roles": ["metadata"],
+      "title": "Iceberg table metadata",
+      "description": "Apache Iceberg v3 table metadata whose manifests reference the GeoParquet file above in place. Read with DuckDB iceberg_scan() or PyIceberg StaticTable."
+    }
+  }
+}
