@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [v1.1.0] - 2026-09-19
 
 ### Added
 
@@ -17,9 +17,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   connect to a static or remote REST catalog.
 - `static` value for `iceberg:catalog_type`, for serverless catalogs on object
   storage.
+- `iceberg:metadata_location` is now required when `iceberg:catalog_type` is
+  `static`. A static catalog has no server to resolve the current metadata.
+- A second example, `examples/portolan-collection.json`, for the Portolan
+  convention. The GeoParquet file keeps the `data` role and the Iceberg metadata
+  asset carries the `metadata` role alone.
+- Every released schema is tracked under `json-schema/v<version>/schema.json`.
+- `npm run check-version` fails when the `package.json` version, the schema
+  `$id`, and the schema URIs in the README and the examples disagree.
 
 ### Changed
 
+- The canonical schema URI is now
+  `https://schemas.portolan-sdi.org/incubating/iceberg/v1.1.0/schema.json`.
+  portolan-spec pins and publishes every portolan-sdi extension schema under
+  that host, next to the Portolan profile. This repository no longer deploys a
+  site. The retired `portolan-sdi.github.io/stac-iceberg-extension/v1.0.0` URL
+  keeps serving the 2026-04-07 schema, which stays tracked at
+  `json-schema/v1.0.0/schema.json`.
 - `iceberg:current_snapshot_id` is now a string. Iceberg snapshot IDs are 64-bit
   and lose precision when serialized as a JSON number.
 - Connection guidance now depends on `iceberg:catalog_type`. A static catalog

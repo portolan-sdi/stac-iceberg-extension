@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://portolan-sdi.github.io/stac-iceberg-extension/v1.0.0/schema.json#",
+  "$id": "https://schemas.portolan-sdi.org/incubating/iceberg/v1.1.0/schema.json#",
   "title": "STAC Iceberg Extension",
   "description": "Extends STAC Collections with Apache Iceberg table access and versioning metadata.",
   "oneOf": [
@@ -18,6 +18,9 @@
         },
         {
           "$ref": "#/definitions/stac_extensions"
+        },
+        {
+          "$ref": "#/definitions/static_requires_metadata_location"
         }
       ],
       "anyOf": [
@@ -43,9 +46,24 @@
         "stac_extensions": {
           "type": "array",
           "contains": {
-            "const": "https://portolan-sdi.github.io/stac-iceberg-extension/v1.0.0/schema.json"
+            "const": "https://schemas.portolan-sdi.org/incubating/iceberg/v1.1.0/schema.json"
           }
         }
+      }
+    },
+    "static_requires_metadata_location": {
+      "$comment": "A static catalog has no server to resolve the current metadata, so the metadata.json location is required. A managed catalog resolves it at read time and may omit the field.",
+      "if": {
+        "type": "object",
+        "required": ["iceberg:catalog_type"],
+        "properties": {
+          "iceberg:catalog_type": {
+            "const": "static"
+          }
+        }
+      },
+      "then": {
+        "required": ["iceberg:metadata_location"]
       }
     },
     "fields": {
@@ -71,7 +89,7 @@
         },
         "iceberg:table_id": {
           "type": "string",
-          "description": "Fully qualified Iceberg table identifier (namespace.table)"
+          "description": "Fully qualified Iceberg table identifier (namespace.table). A managed catalog resolves this identifier to the current metadata. On a static REST surface the same identifier addresses the pre-rendered table document at v1/{prefix}/namespaces/{namespace}/tables/{table}, so the namespace part mirrors the catalog tree and the table part is the collection id."
         },
         "iceberg:metadata_location": {
           "type": "string",
