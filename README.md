@@ -3,7 +3,7 @@
 > **Work in Progress** — This extension is under active development. Field names, schema, and the extension URL may change before the first stable release.
 
 - **Title:** Iceberg
-- **Identifier:** <https://portolan-sdi.github.io/stac-iceberg-extension/v1.1.0/schema.json>
+- **Identifier:** <https://schemas.portolan-sdi.org/incubating/iceberg/v1.1.0/schema.json>
 - **Field Name Prefix:** iceberg
 - **Scope:** Collection
 - **[Extension Maturity Classification](https://github.com/radiantearth/stac-spec/tree/master/extensions#extension-maturity):** Proposal
@@ -70,6 +70,12 @@ This extension is designed to complement the [STAC Table Extension](https://gith
 ### Why not reuse `table:storage_options`, `storage:schemes`, or `table:tables`
 
 A fair question is whether the connection fields belong in existing extensions. The Table extension has `table:storage_options` (an fsspec-style keyword bag) and `table:tables` (named tables on a Collection), and the [Storage Extension](https://github.com/stac-extensions/storage) has `storage:schemes` for where asset files physically live. We defer schema and file-location metadata to those, and we do not re-declare the underlying data files. But none of them can express the Iceberg-specific facts a client needs to open a table, the catalog type, the REST prefix, the format version, the current snapshot id, and the partition spec. Keeping these in a single `iceberg:` block gives one coherent connect-block rather than scattering Iceberg semantics across a generic storage bag.
+
+### Where the schema is published
+
+portolan-spec publishes this schema. It pins each released version in `stac/portolan-extensions.json` and serves it at <https://schemas.portolan-sdi.org/incubating/iceberg/v1.1.0/schema.json>, next to the Portolan profile and the other portolan-sdi extensions. This repository holds the source and does not deploy a site of its own.
+
+Version 1.0.0 was published under the retired host `portolan-sdi.github.io/stac-iceberg-extension`. That URL still serves the 2026-04-07 schema, which this repository tracks at `json-schema/v1.0.0/schema.json`. Use the `schemas.portolan-sdi.org` URI for new work.
 
 ## Building and Testing
 

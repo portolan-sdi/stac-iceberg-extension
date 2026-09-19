@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 // The package.json version is the single source of truth for the extension
-// version, and https://portolan-sdi.github.io/stac-iceberg-extension/v<version>/schema.json
-// is the single canonical schema URI. The schema for the current version must
+// version, and https://schemas.portolan-sdi.org/incubating/iceberg/v<version>/schema.json
+// is the single canonical schema URI. portolan-spec pins each version of this
+// schema and serves it under that host. The schema for the current version must
 // exist under json-schema/, and every extension schema URI — in the schema
 // itself, the README, and the examples — must match the canonical one exactly,
-// host included. Released versions stay tracked under json-schema/ and are not
-// edited, so a published URL never changes shape under a reader.
+// host included. The pattern also matches the retired portolan-sdi.github.io
+// host, so a stale reference to it fails here instead of reaching a reader.
 'use strict';
 
 const fs = require('fs');
@@ -13,9 +14,9 @@ const path = require('path');
 
 const root = path.join(__dirname, '..');
 const version = require('../package.json').version;
-const canonical = `https://portolan-sdi.github.io/stac-iceberg-extension/v${version}/schema.json`;
+const canonical = `https://schemas.portolan-sdi.org/incubating/iceberg/v${version}/schema.json`;
 const pattern =
-  /https:\/\/portolan-sdi\.github\.io\/stac-iceberg-extension\/v\d+\.\d+\.\d+\/schema\.json/g;
+  /https:\/\/(?:schemas\.portolan-sdi\.org\/incubating\/iceberg|portolan-sdi\.github\.io\/stac-iceberg-extension)\/v\d+\.\d+\.\d+\/schema\.json/g;
 
 let failed = false;
 const fail = (msg) => {

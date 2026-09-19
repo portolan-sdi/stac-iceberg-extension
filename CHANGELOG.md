@@ -23,13 +23,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   convention. The GeoParquet file keeps the `data` role and the Iceberg metadata
   asset carries the `metadata` role alone.
 - Every released schema is tracked under `json-schema/v<version>/schema.json`.
-  The publish workflow builds the site from those files. It no longer downloads
-  the live site to preserve older versions.
 - `npm run check-version` fails when the `package.json` version, the schema
   `$id`, and the schema URIs in the README and the examples disagree.
 
 ### Changed
 
+- The canonical schema URI is now
+  `https://schemas.portolan-sdi.org/incubating/iceberg/v1.1.0/schema.json`.
+  portolan-spec pins and publishes every portolan-sdi extension schema under
+  that host, next to the Portolan profile. This repository no longer deploys a
+  site. The retired `portolan-sdi.github.io/stac-iceberg-extension/v1.0.0` URL
+  keeps serving the 2026-04-07 schema, which stays tracked at
+  `json-schema/v1.0.0/schema.json`.
 - `iceberg:current_snapshot_id` is now a string. Iceberg snapshot IDs are 64-bit
   and lose precision when serialized as a JSON number.
 - Connection guidance now depends on `iceberg:catalog_type`. A static catalog
