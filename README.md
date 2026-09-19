@@ -43,9 +43,9 @@ How a consumer reaches the table depends on `iceberg:catalog_type`, and the asse
 }
 ```
 
-Use `"roles": ["metadata"]` when the Collection also publishes the GeoParquet files as a `data` asset. The Iceberg metadata document is then a second way to reach bytes the Collection already declares, and it holds no data itself. Use `"roles": ["data", "metadata"]` only when the Iceberg table is the sole distribution, so the asset is the only handle a reader has on the data. The `examples/portolan-collection.json` file shows the first case and `examples/collection.json` shows the second.
+Use `"roles": ["metadata"]` when the Collection also publishes the GeoParquet files as a `data` asset. The Iceberg metadata document then describes bytes the Collection already declares, and stores none of its own. Use `"roles": ["data", "metadata"]` only when the Iceberg table is the only distribution, so the asset is the reader's one handle on the data. The `examples/portolan-collection.json` file shows the first case and `examples/collection.json` shows the second.
 
-A static catalog must carry `iceberg:metadata_location`, and the schema requires it. There is no server to resolve the current metadata, so the location is the whole connection. The field may hold a relative path when the Collection is served next to its table, as `examples/portolan-collection.json` does. A reader resolves it against the Collection's `self` link, the same way it resolves an asset `href`.
+The schema requires `iceberg:metadata_location` on a static catalog. No server resolves the current metadata, so the location is the whole connection. A relative path is allowed when the Collection is served next to its table, as `examples/portolan-collection.json` does. A reader resolves it against the Collection's `self` link, the same way it resolves an asset `href`.
 
 **Managed catalog** (`iceberg:catalog_type` of `rest`, `glue`, `hive`, `sql`, `dynamodb`). There is no static metadata file to fetch, the current metadata is resolved dynamically by the catalog server, so do not add a metadata-file asset. The connection is carried by the fields `iceberg:catalog_uri`, `iceberg:table_id`, and where relevant `iceberg:rest_prefix` and `iceberg:authorization_type`. A client uses those to load the table, for example DuckDB `ATTACH '<catalog_uri>' (TYPE iceberg, ...)`.
 
@@ -61,7 +61,9 @@ The v3 geometry type is young in the consuming engines. As of mid 2026, DuckDB 1
 
 A geometry column is reported in `table:columns` with `"type": "geometry"`, which is the logical type. Physically it is a Parquet `BYTE_ARRAY` (binary) holding ISO WKB, the same payload Iceberg v3, Parquet 2.11+, and GeoParquet all use. We list the logical type, not the `binary` storage primitive, for the same reason a decimal column is not listed as `fixed_len_byte_array`. CRS travels separately, in `proj:code` and in the Iceberg type parameter `geometry(C)`, defaulting to `OGC:CRS84`.
 
-The two type strings are different things and do not have to match character for character. `table:columns` reports the logical type `geometry`. The Iceberg table schema reports the parameterized form, written unquoted as `geometry(EPSG:4326)`. Unquoted is the form the Iceberg spec, the Java implementation and DuckDB use. PyIceberg 0.12 diverges: it writes `geometry('EPSG:4326')` with quotes and parses only the quoted form, so it cannot load a table written by DuckDB or Java, and DuckDB reads the PyIceberg quotes as part of the CRS. Do not copy either type string into `table:columns`.
+`table:columns` reports the logical type `geometry`, with no parameter. The Iceberg table schema reports the parameterized form instead, written unquoted as `geometry(EPSG:4326)` by the Iceberg spec, the Java implementation and DuckDB. Keep each string in its own field.
+
+PyIceberg 0.12 diverges here. It writes `geometry('EPSG:4326')` with quotes and parses only the quoted form, so a table written by DuckDB or Java fails to load in PyIceberg. DuckDB reads the PyIceberg quotes as part of the CRS.
 
 ## Relation to other extensions
 
@@ -71,9 +73,9 @@ This extension is designed to complement the [STAC Table Extension](https://gith
 
 A fair question is whether the connection fields belong in existing extensions. The Table extension has `table:storage_options` (an fsspec-style keyword bag) and `table:tables` (named tables on a Collection), and the [Storage Extension](https://github.com/stac-extensions/storage) has `storage:schemes` for where asset files physically live. We defer schema and file-location metadata to those, and we do not re-declare the underlying data files. But none of them can express the Iceberg-specific facts a client needs to open a table, the catalog type, the REST prefix, the format version, the current snapshot id, and the partition spec. Keeping these in a single `iceberg:` block gives one coherent connect-block rather than scattering Iceberg semantics across a generic storage bag.
 
-### Where the schema is published
+### Publication
 
-portolan-spec publishes this schema. It pins each released version in `stac/portolan-extensions.json` and serves it at <https://schemas.portolan-sdi.org/incubating/iceberg/v1.1.0/schema.json>, next to the Portolan profile and the other portolan-sdi extensions. This repository holds the source and does not deploy a site of its own.
+portolan-spec publishes this schema. It pins each released version in `stac/portolan-extensions.json` and serves it at <https://schemas.portolan-sdi.org/incubating/iceberg/v1.1.0/schema.json>, next to the Portolan profile and the other portolan-sdi extensions. This repository stores the source and deploys no site of its own.
 
 Version 1.0.0 was published under the retired host `portolan-sdi.github.io/stac-iceberg-extension`. That URL still serves the 2026-04-07 schema, which this repository tracks at `json-schema/v1.0.0/schema.json`. Use the `schemas.portolan-sdi.org` URI for new work.
 
