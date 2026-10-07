@@ -1,0 +1,83 @@
+# Tag a release when the version in package.json changes.
+#
+# The schema is published by portolan-spec, which pins each version of this
+# extension to a git ref in stac/portolan-extensions.json. That pin needs a
+# tag to name. Tagging by hand is the step that gets skipped: the partition
+# extension's pin still names a commit, because its repoint never happened.
+#
+# package.json is the one source of truth for the version here, because
+# scripts/check-version.js already fails when it disagrees with the schema
+# $id or with a URI in the README or an example.
+#
+# The job is idempotent. It exits when the tag exists, so a push to main that
+# does not change the version does nothing.
+name: Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # recovery, when a push ran before this workflow existed
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write # create the tag and the release
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1  # zizmor: ignore[artipacked] deliberate: the tag push needs the persisted token
+        with:
+          fetch-depth: 0 # tags, so the existence check is accurate
+
+      - name: Read the version
+        id: version
+        run: |
+          VERSION=$(jq -r .version package.json)
+          case "$VERSION" in
+            [0-9]*.[0-9]*.[0-9]*) ;;
+            *) echo "::error::package.json version is '$VERSION', not a semver"; exit 1 ;;
+          esac
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Version $VERSION, tag v$VERSION"
+
+      - name: Check whether the tag exists
+        id: check
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "$TAG exists. Nothing to do."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "$TAG does not exist. The job tags this commit."
+          fi
+
+      - name: Tag the commit
+        if: steps.check.outputs.exists == 'false'
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin "$TAG"
+
+      - name: Create the release
+        if: steps.check.outputs.exists == 'false'
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "$TAG" \
+            --title "$TAG" \
+            --notes "See [CHANGELOG](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/blob/main/CHANGELOG.md).
+
+          portolan-spec pins this version in \`stac/portolan-extensions.json\` and publishes the schema at https://schemas.portolan-sdi.org/incubating/iceberg/$TAG/schema.json"
