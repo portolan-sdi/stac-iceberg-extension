@@ -3,9 +3,16 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+and this project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
+for releases from v2.0.0.
 
-## [v1.1.0] - 2026-09-19
+**The 1.x line can break.** This extension is a proposal, and no public catalog
+depends on v1.0.0. A 1.x release may therefore change the schema in a way that
+rejects a document an earlier 1.x release accepted. Each such change is marked
+**BREAKING** below. From v2.0.0 the usual rules apply, and a breaking change
+takes a major version.
+
+## [v1.1.0] - 2026-10-07
 
 ### Added
 
@@ -22,7 +29,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A second example, `examples/portolan-collection.json`, for the Portolan
   convention. The GeoParquet file keeps the `data` role and the Iceberg metadata
   asset carries the `metadata` role alone.
-- Every released schema is tracked under `json-schema/v<version>/schema.json`.
+- `npm run check-version` keeps `json-schema/schema.json` in step with the
+  `package.json` version. A git tag keeps each release, which is
+  the path format `portolan-spec` pins, one path for every version.
 - `npm run check-version` fails when the `package.json` version, the schema
   `$id`, and the schema URIs in the README and the examples disagree.
 
@@ -33,10 +42,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   portolan-spec pins and publishes every portolan-sdi extension schema under
   that host, next to the Portolan profile. This repository no longer deploys a
   site. The retired `portolan-sdi.github.io/stac-iceberg-extension/v1.0.0` URL
-  keeps serving the 2026-04-07 schema, which stays tracked at
-  `json-schema/v1.0.0/schema.json`.
-- `iceberg:current_snapshot_id` is now a string. Iceberg snapshot IDs are 64-bit
-  and lose precision when serialized as a JSON number.
+  keeps serving the 2026-04-07 schema, which the `v1.0.0` git tag keeps.
+- **BREAKING.** `iceberg:current_snapshot_id` is now a string. Iceberg snapshot
+  IDs are 64-bit and lose precision when serialized as a JSON number. A document
+  that carries the v1.0.0 integer form no longer validates.
 - Connection guidance now depends on `iceberg:catalog_type`. A static catalog
   carries an Iceberg asset of type `application/vnd.apache.iceberg+json` pointing
   at the fetchable `metadata.json` (was `application/x-iceberg`). A managed
@@ -44,10 +53,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   reached through the connection fields.
 - The extension no longer re-declares the underlying GeoParquet data asset. The
   data files belong to the base Collection and the Table extension.
-- `iceberg:partition_spec` now mirrors the real Iceberg partition field shape
-  (`name`, `transform`, optional `source-id` and `field-id`) and documents the
-  parameterized `bucket[N]` and `truncate[W]` transforms. The previous
-  `field`/`transform` shape was lossy and could not carry transform parameters.
+- **BREAKING.** `iceberg:partition_spec` now mirrors the real Iceberg partition
+  field shape (`name`, `transform`, optional `source-id` and `field-id`) and
+  documents the parameterized `bucket[N]` and `truncate[W]` transforms. The
+  previous `field`/`transform` shape was lossy and could not carry transform
+  parameters. An item keyed `field` no longer validates.
 - Field descriptions now state plainly that `static` and `authorization_type:
   none` are Portolan conventions, not Iceberg-defined values, and that the
   `application/vnd.apache.iceberg+json` media type is unregistered and not used

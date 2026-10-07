@@ -89,7 +89,7 @@
         },
         "iceberg:table_id": {
           "type": "string",
-          "description": "Fully qualified Iceberg table identifier (namespace.table). A managed catalog resolves this identifier to the current metadata. On a static REST surface the same identifier addresses the pre-rendered table document at v1/{prefix}/namespaces/{namespace}/tables/{table}, so the namespace part mirrors the catalog tree and the table part is the collection id."
+          "description": "Fully qualified Iceberg table identifier (namespace.table). A managed catalog resolves this identifier to the current metadata. On a static REST surface the same identifier addresses the pre-rendered table document at v1/{prefix}/namespaces/{namespace}/tables/{table}, so the namespace part mirrors the catalog tree and the table part is the collection id with each hyphen replaced by an underscore, because an unquoted Iceberg identifier takes no hyphen."
         },
         "iceberg:metadata_location": {
           "type": "string",

@@ -45,7 +45,7 @@ How a consumer reaches the table depends on `iceberg:catalog_type`, and the asse
 
 Use `"roles": ["metadata"]` when the Collection also publishes the GeoParquet files as a `data` asset. The Iceberg metadata document then describes bytes the Collection already declares, and stores none of its own. Use `"roles": ["data", "metadata"]` only when the Iceberg table is the only distribution, so the asset is the reader's one handle on the data. The `examples/portolan-collection.json` file shows the first case and `examples/collection.json` shows the second.
 
-The schema requires `iceberg:metadata_location` on a static catalog. No server resolves the current metadata, so the location is the whole connection. A relative path is allowed when the Collection is served next to its table, as `examples/portolan-collection.json` does. A reader resolves it against the Collection's `self` link, the same way it resolves an asset `href`.
+The schema requires `iceberg:metadata_location` on a static catalog. No server resolves the current metadata, so the location is the whole connection. A relative path is allowed when the Collection is served next to its table, as `examples/portolan-collection.json` does. A reader resolves it against the Collection's absolute `self` link, the same way it resolves an asset `href`. When the `self` link is missing or relative, a reader resolves it against the URL that served the Collection.
 
 **Managed catalog** (`iceberg:catalog_type` of `rest`, `glue`, `hive`, `sql`, `dynamodb`). The catalog server resolves the current metadata, so a client loads the table from the connection fields and needs no asset. Add one only when the current `metadata.json` is a real document a reader can fetch, which a warehouse on object storage does publish. Give it the `metadata` role and set `iceberg:metadata_location` to the same URL. The connection is carried by the fields `iceberg:catalog_uri`, `iceberg:table_id`, and where relevant `iceberg:rest_prefix` and `iceberg:authorization_type`. A client uses those to load the table, for example DuckDB `ATTACH '<catalog_uri>' (TYPE iceberg, ...)`.
 
@@ -77,7 +77,7 @@ A fair question is whether the connection fields belong in existing extensions. 
 
 portolan-spec publishes this schema. It pins each released version in `stac/portolan-extensions.json` and serves it at <https://schemas.portolan-sdi.org/incubating/iceberg/v1.1.0/schema.json>, next to the Portolan profile and the other portolan-sdi extensions. This repository stores the source and deploys no site of its own.
 
-Version 1.0.0 was published under the retired host `portolan-sdi.github.io/stac-iceberg-extension`. That URL still serves the 2026-04-07 schema, which this repository tracks at `json-schema/v1.0.0/schema.json`. Use the `schemas.portolan-sdi.org` URI for new work.
+Version 1.0.0 was published under the retired host `portolan-sdi.github.io/stac-iceberg-extension`. That URL still serves the 2026-04-07 schema, which this repository keeps at its `v1.0.0` git tag. Use the `schemas.portolan-sdi.org` URI for new work.
 
 ## Building and Testing
 

@@ -24,13 +24,13 @@ const fail = (msg) => {
   console.error(`✗ ${msg}`);
 };
 
-const schemaPath = path.join(root, 'json-schema', `v${version}`, 'schema.json');
+const schemaPath = path.join(root, 'json-schema', 'schema.json');
 if (!fs.existsSync(schemaPath)) {
-  fail(`json-schema/v${version}/schema.json not found (package.json version is ${version})`);
+  fail(`json-schema/schema.json not found (package.json version is ${version})`);
 } else {
   const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
   if (schema.$id !== `${canonical}#`) {
-    fail(`json-schema/v${version}/schema.json $id is ${schema.$id}, expected ${canonical}#`);
+    fail(`json-schema/schema.json $id is ${schema.$id}, expected ${canonical}#`);
   }
 }
 

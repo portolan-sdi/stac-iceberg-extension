@@ -26,7 +26,7 @@
     },
     {
       "rel": "self",
-      "href": "./collection.json",
+      "href": "https://data.example.org/catalog/boston-open-space/collection.json",
       "type": "application/json"
     }
   ],
