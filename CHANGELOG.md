@@ -12,6 +12,20 @@ rejects a document an earlier 1.x release accepted. Each such change is marked
 **BREAKING** below. From v2.0.0 the usual rules apply, and a breaking change
 takes a major version.
 
+## [Unreleased]
+
+### Added
+
+- README section "Read the published snapshot". It shows how a reader selects
+  `iceberg:current_snapshot_id` with DuckDB, and where it reads the table when
+  the pinned metadata file is gone. It also gives the storage secret that the
+  manifest paths need.
+
+### Fixed
+
+- The README `ATTACH` example now passes the warehouse name first and the
+  catalog URL as `ENDPOINT`, which is the form DuckDB takes.
+
 ## [v1.1.0] - 2026-10-07
 
 ### Added
