@@ -47,13 +47,55 @@ Use `"roles": ["metadata"]` when the Collection also publishes the GeoParquet fi
 
 The schema requires `iceberg:metadata_location` on a static catalog. No server resolves the current metadata, so the location is the whole connection. A relative path is allowed when the Collection is served next to its table, as `examples/portolan-collection.json` does. A reader resolves it against the Collection's absolute `self` link, the same way it resolves an asset `href`. When the `self` link is missing or relative, a reader resolves it against the URL that served the Collection.
 
-**Managed catalog** (`iceberg:catalog_type` of `rest`, `glue`, `hive`, `sql`, `dynamodb`). The catalog server resolves the current metadata, so a client loads the table from the connection fields and needs no asset. Add one only when the current `metadata.json` is a real document a reader can fetch, which a warehouse on object storage does publish. Give it the `metadata` role and set `iceberg:metadata_location` to the same URL. The connection is carried by the fields `iceberg:catalog_uri`, `iceberg:table_id`, and where relevant `iceberg:rest_prefix` and `iceberg:authorization_type`. A client uses those to load the table, for example DuckDB `ATTACH '<catalog_uri>' (TYPE iceberg, ...)`.
+**Managed catalog** (`iceberg:catalog_type` of `rest`, `glue`, `hive`, `sql`, `dynamodb`). The catalog server resolves the current metadata, so a client loads the table from the connection fields and needs no asset. Add one only when the current `metadata.json` is a real document a reader can fetch, which a warehouse on object storage does publish. Give it the `metadata` role and set `iceberg:metadata_location` to the same URL. The connection is carried by the fields `iceberg:catalog_uri`, `iceberg:table_id`, and where relevant `iceberg:rest_prefix` and `iceberg:authorization_type`. A client uses those to load the table, for example DuckDB `ATTACH '<warehouse>' AS cat (TYPE iceberg, ENDPOINT '<catalog_uri>', ...)`. DuckDB sends the warehouse name to the catalog's `v1/config` endpoint, which answers with the prefix that `iceberg:rest_prefix` records.
 
 `iceberg:metadata_location` is the single field that connects the most consumers. DuckDB `iceberg_scan('<metadata.json>')`, PyIceberg `StaticTable.from_metadata(...)`, and BigQuery external tables (`uris = ['<metadata.json>']`) all read it directly. The other fields support the ATTACH path against a managed or static REST surface. Note that Spark and Trino do not have a metadata-file entry point, they need a managed catalog (REST, Hive, Glue, JDBC), and Trino in particular rejects the sequential `vN.metadata.json` naming a filesystem-style table uses. So the `static` pattern is consumable by DuckDB, PyIceberg, and BigQuery, not by Spark or Trino without a catalog server.
 
 A consumer note on URI scheme. `iceberg:metadata_location` and the asset `href` use the `https://` form, which DuckDB httpfs reads directly. PyIceberg and BigQuery expect the object-store scheme (`gs://`, `s3://`), so a client may need to rewrite the host to the bucket form.
 
 There is no IANA-registered media type for Iceberg. `application/vnd.apache.iceberg+json` is an unregistered vendor media type we use for the metadata document, it is more correct than the `application/x-iceberg` earlier drafts used (RFC 6838 discourages the `x-` tree). Query engines do not dispatch on it, they key off the `iceberg_scan` / `StaticTable` call or a `format = 'ICEBERG'` option, so the media type is a hint for STAC clients only.
+
+#### Read the published snapshot
+
+`iceberg:current_snapshot_id` names the snapshot the Collection describes. Pass it to the engine on every read. Without it, the engine reads the head of `main`, and that differs from the published version once the table takes a new commit.
+
+The pinned file can also disappear. A managed catalog writes a new `metadata.json` on every commit and deletes old ones after its retention, set by `write.metadata.previous-versions-max`. The pinned snapshot usually survives in the newer files, so a 404 on `iceberg:metadata_location` does not mean the data is gone. These steps apply to a managed catalog that publishes `iceberg:metadata_location`. A `static` catalog keeps its metadata files.
+
+Resolve a relative `iceberg:metadata_location` against the Collection's `self` link first, the same way as for a static catalog. Then create a secret for the object store. The metadata file stores `s3://` or `gs://` paths for the manifest list, the manifests, and the data files, even when `iceberg:metadata_location` is an `https://` URL. Without a secret, DuckDB sends the first manifest list read to the AWS host and gets a 404. Take the host and the region from `storage:schemes` when the Collection has one, and from the host of `iceberg:metadata_location` otherwise.
+
+```sql
+CREATE SECRET (TYPE s3, ENDPOINT '<storage host>', URL_STYLE 'path', REGION '<region>');
+```
+
+Use `TYPE gcs` when the paths start with `gs://`.
+
+1. Open the pinned file and select the pinned snapshot.
+
+   ```sql
+   SELECT * FROM iceberg_scan('<iceberg:metadata_location>', snapshot_from_id = <iceberg:current_snapshot_id>);
+   ```
+
+2. If the pinned file answers 404 and you have credentials for the catalog, load the table through the catalog and select the same snapshot.
+
+   ```sql
+   ATTACH '<warehouse>' AS cat (TYPE iceberg, ENDPOINT '<iceberg:catalog_uri>', AUTHORIZATION_TYPE '<iceberg:authorization_type>');
+   SELECT * FROM cat.<iceberg:table_id> AT (VERSION => <iceberg:current_snapshot_id>);
+   ```
+
+   With `oauth2`, also pass `CLIENT_ID` and `CLIENT_SECRET`, or `SECRET` with the name of a DuckDB secret of `TYPE iceberg` that holds them.
+
+3. If you cannot use the catalog, open the table root. Remove `/metadata/<file>` from `iceberg:metadata_location` to get it.
+
+   ```sql
+   SELECT * FROM iceberg_scan('<table root>', snapshot_from_id = <iceberg:current_snapshot_id>);
+   ```
+
+4. If no step finds the snapshot, report the Collection as stale. Do not read the current snapshot in its place, because that is a different version of the data.
+
+Step 3 works only when the catalog writes `metadata/version-hint.text` and the table follows the standard layout, with `metadata/` under the table location. DuckDB resolves the root through that file. Many REST, Glue, and Hive catalogs do not write it, and DuckDB then fails with `No version was provided and no version-hint could be found`. Right after a commit, the hint can still point at the previous file for some minutes. Step 1 covers that window because the pinned file still exists.
+
+When you automate these steps, fall back only on a 404 for `iceberg:metadata_location` itself. DuckDB raises the same `duckdb.HTTPException` with a 404 when the secret is missing, and no fallback fixes that.
+
 
 ### v3 geometry support today
 
