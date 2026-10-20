@@ -11,6 +11,6 @@ permissions:
 jobs:
   test:
     # npm test already runs remark, so the reusable workflow does not repeat it.
-    uses: portolan-sdi/portolan-ops/.github/workflows/reusable-stac-ext.yml@v1
+    uses: portolan-sdi/portolan-ops/.github/workflows/reusable-stac-ext.yml@bba12692563d6cd77aa9207c6152174240295839
     with:
       run-remark: false
