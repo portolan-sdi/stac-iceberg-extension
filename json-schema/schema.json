@@ -111,7 +111,7 @@
         },
         "iceberg:ref": {
           "type": "string",
-          "description": "The name of a tag in the table 'refs' that points at iceberg:current_snapshot_id. The publisher chooses the name, for example 'published' or the version 'v1.2.0'. Snapshot expiry keeps a snapshot that a tag names. Omit the field when no tag names the published snapshot. A reader selects the snapshot by iceberg:current_snapshot_id, not by this name."
+          "description": "The name of a tag in the table 'refs' that points at iceberg:current_snapshot_id. The publisher chooses the name, for example 'published' or the version 'v1.2.0'. Snapshot expiry keeps a tagged snapshot. Omit the field when the published snapshot has no tag. A reader selects the snapshot by iceberg:current_snapshot_id, not by this name."
         },
         "iceberg:partition_spec": {
           "type": "array",

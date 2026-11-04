@@ -22,7 +22,7 @@ This extension adds [Apache Iceberg](https://iceberg.apache.org/) table metadata
 | iceberg:metadata_location | string | URL of the table's current `metadata.json`, usable directly with `iceberg_scan()` or PyIceberg `StaticTable`. Required when `iceberg:catalog_type` is `static`. May be relative to the Collection |
 | iceberg:format_version | integer | Iceberg format version (`1`, `2`, or `3`). Version 3 is the first with native geometry/geography types and CRS, so geospatial tables are v3 or later. Engine support for the v3 geometry type still varies, see the note below |
 | iceberg:current_snapshot_id | string | The snapshot the Collection describes. It is the published snapshot, and it can differ from the head of `main`. A string, because Iceberg IDs are 64-bit and lose precision as a JSON number |
-| iceberg:ref | string | The name of a tag in the table `refs` that points at `iceberg:current_snapshot_id`. The publisher chooses the name. Requires `iceberg:current_snapshot_id`. Omit it when no tag names the published snapshot. See [Name the published snapshot with a tag](#name-the-published-snapshot-with-a-tag) |
+| iceberg:ref | string | The name of a tag in the table `refs` that points at `iceberg:current_snapshot_id`. The publisher chooses the name. Requires `iceberg:current_snapshot_id`. Omit it when the published snapshot has no tag. See [Name the published snapshot with a tag](#name-the-published-snapshot-with-a-tag) |
 | iceberg:partition_spec | \[object\] | Partition fields mirroring the table's partition spec. Each entry has `name` and `transform` (required) plus optional `source-id` and `field-id`, e.g. `[{"name": "geohash_3", "transform": "identity", "source-id": 5, "field-id": 1000}]`. The `transform` uses Iceberg names, including the parameterized `bucket[N]` and `truncate[W]`. Omit for unpartitioned tables |
 
 ### Connecting to the table
@@ -99,7 +99,7 @@ When you automate these steps, fall back only on a 404 for `iceberg:metadata_loc
 
 #### Name the published snapshot with a tag
 
-Snapshot expiry removes old snapshots, and nothing in the table marks the pinned one as published. An Iceberg tag does. A tag is a named reference to one snapshot, stored in the `refs` map of the table metadata. Snapshot expiry keeps every snapshot that a tag or a branch names. A tag stays on its snapshot until someone removes it. A branch moves on every commit to that branch.
+Snapshot expiry removes old snapshots, and nothing in the table marks the pinned one as published. An Iceberg tag does. A tag is a named reference to one snapshot, stored in the `refs` map of the table metadata. Snapshot expiry keeps every snapshot that a tag or a branch names. A tag stays on its snapshot until someone removes it, while a branch moves on every commit to that branch.
 
 ```json
 "refs": {
@@ -122,7 +122,7 @@ The publisher chooses the tag name. One fixed tag such as `published` protects t
 
 `iceberg:ref` is optional. A publisher whose client cannot write a tag omits it. A reader always selects the snapshot by `iceberg:current_snapshot_id`, as the steps above show, and never has to resolve the tag. The tag protects the snapshot, but it does not protect the pinned metadata file. A managed catalog still deletes old `metadata.json` files, so the fallback steps above still apply.
 
-A reader can check that the tag still names the pinned snapshot. DuckDB 2.0 lists the refs with `iceberg_refs()`. `iceberg_scan` takes no subquery, so the check takes two statements.
+A reader can check that the tag still points at the pinned snapshot. DuckDB 2.0 lists the refs with `iceberg_refs()`. `iceberg_scan` takes no subquery, so the check takes two statements.
 
 ```sql
 SELECT snapshot_id FROM iceberg_refs('<iceberg:metadata_location>') WHERE name = '<iceberg:ref>' AND type = 'TAG';
