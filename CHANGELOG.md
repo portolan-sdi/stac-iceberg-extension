@@ -16,10 +16,22 @@ takes a major version.
 
 ### Added
 
+- `iceberg:ref`, the name of an Iceberg tag that points at
+  `iceberg:current_snapshot_id`. Snapshot expiry keeps a tagged snapshot. The
+  field is optional and requires `iceberg:current_snapshot_id`.
+  `examples/portolan-collection.json` carries it.
+- README section "Name the published snapshot with a tag", with the client
+  support for refs in pyiceberg 0.12.0, DuckDB 1.5.6, and DuckDB 2.0.0.
 - README section "Read the published snapshot". It shows how a reader selects
   `iceberg:current_snapshot_id` with DuckDB, and where it reads the table when
   the pinned metadata file is gone. It also gives the storage secret that the
   manifest paths need.
+
+### Changed
+
+- The description of `iceberg:current_snapshot_id` now says it names the
+  published snapshot, which can differ from the head of `main`. The field keeps
+  its name in 1.x.
 
 ### Fixed
 
