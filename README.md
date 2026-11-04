@@ -21,7 +21,8 @@ This extension adds [Apache Iceberg](https://iceberg.apache.org/) table metadata
 | iceberg:table_id | string | Fully qualified table identifier (e.g., `portolan.boston_open_space`). On a static REST surface it also addresses the table document under `v1/{prefix}/namespaces/{namespace}/tables/{table}` |
 | iceberg:metadata_location | string | URL of the table's current `metadata.json`, usable directly with `iceberg_scan()` or PyIceberg `StaticTable`. Required when `iceberg:catalog_type` is `static`. May be relative to the Collection |
 | iceberg:format_version | integer | Iceberg format version (`1`, `2`, or `3`). Version 3 is the first with native geometry/geography types and CRS, so geospatial tables are v3 or later. Engine support for the v3 geometry type still varies, see the note below |
-| iceberg:current_snapshot_id | string | Current snapshot ID for reproducibility. A string, because Iceberg IDs are 64-bit and lose precision as a JSON number |
+| iceberg:current_snapshot_id | string | The snapshot the Collection describes. It is the published snapshot, and it can differ from the head of `main`. A string, because Iceberg IDs are 64-bit and lose precision as a JSON number |
+| iceberg:ref | string | The name of a tag in the table `refs` that points at `iceberg:current_snapshot_id`. The publisher chooses the name. Requires `iceberg:current_snapshot_id`. Omit it when no tag names the published snapshot. See [Name the published snapshot with a tag](#name-the-published-snapshot-with-a-tag) |
 | iceberg:partition_spec | \[object\] | Partition fields mirroring the table's partition spec. Each entry has `name` and `transform` (required) plus optional `source-id` and `field-id`, e.g. `[{"name": "geohash_3", "transform": "identity", "source-id": 5, "field-id": 1000}]`. The `transform` uses Iceberg names, including the parameterized `bucket[N]` and `truncate[W]`. Omit for unpartitioned tables |
 
 ### Connecting to the table
@@ -95,6 +96,55 @@ Use `TYPE gcs` when the paths start with `gs://`.
 Step 3 works only when the catalog writes `metadata/version-hint.text` and the table follows the standard layout, with `metadata/` under the table location. DuckDB resolves the root through that file. Many REST, Glue, and Hive catalogs do not write it, and DuckDB then fails with `No version was provided and no version-hint could be found`. Right after a commit, the hint can still point at the previous file for some minutes. Step 1 covers that window because the pinned file still exists.
 
 When you automate these steps, fall back only on a 404 for `iceberg:metadata_location` itself. DuckDB raises the same `duckdb.HTTPException` with a 404 when the secret is missing, and no fallback fixes that.
+
+#### Name the published snapshot with a tag
+
+Snapshot expiry removes old snapshots, and nothing in the table marks the pinned one as published. An Iceberg tag does. A tag is a named reference to one snapshot, stored in the `refs` map of the table metadata. Snapshot expiry keeps every snapshot that a tag or a branch names. A tag stays on its snapshot until someone removes it. A branch moves on every commit to that branch.
+
+```json
+"refs": {
+  "main":    {"type": "branch", "snapshot-id": 1791482447080},
+  "staging": {"type": "branch", "snapshot-id": 2098188110657111080},
+  "v1.2.0":  {"type": "tag",    "snapshot-id": 1791482447080}
+}
+```
+
+The publisher tags the snapshot it publishes, and the Collection names that tag in `iceberg:ref`:
+
+```json
+"iceberg:current_snapshot_id": "1791482447080",
+"iceberg:ref": "v1.2.0"
+```
+
+The publisher chooses the tag name. One fixed tag such as `published` protects the latest version. One tag for each version, named after the version, protects every published version. Snapshot expiry keeps snapshot 1791482447080 for as long as the tag exists. The `staging` branch can move ahead, and `main` can move with it.
+
+`iceberg:ref` names a tag, never a branch. At publish time `main` also sits on the published snapshot, but the next commit moves it. The ref and the pinned id then disagree, and expiry protects only the new branch head.
+
+`iceberg:ref` is optional. A publisher whose client cannot write a tag omits it. A reader always selects the snapshot by `iceberg:current_snapshot_id`, as the steps above show, and never has to resolve the tag. The tag protects the snapshot, but it does not protect the pinned metadata file. A managed catalog still deletes old `metadata.json` files, so the fallback steps above still apply.
+
+A reader can check that the tag still names the pinned snapshot. DuckDB 2.0 lists the refs with `iceberg_refs()`. `iceberg_scan` takes no subquery, so the check takes two statements.
+
+```sql
+SELECT snapshot_id FROM iceberg_refs('<iceberg:metadata_location>') WHERE name = '<iceberg:ref>' AND type = 'TAG';
+SELECT * FROM iceberg_scan('<iceberg:metadata_location>', snapshot_from_id = <iceberg:current_snapshot_id>);
+```
+
+When the first statement returns a different id, or no row, the Collection and the table disagree. Report it, and read by `iceberg:current_snapshot_id` as before.
+
+##### Client support for refs
+
+Measured with pyiceberg 0.12.0 and DuckDB 1.5.6 on 2026-10-09, and with DuckDB 2.0.0 on 2026-11-04.
+
+| Operation | pyiceberg 0.12.0 | DuckDB 1.5.6 | DuckDB 2.0.0 |
+|---|---|---|---|
+| Read a snapshot by id | yes | yes, `AT (VERSION => id)` and `iceberg_scan(..., snapshot_from_id = id)` | yes, as in 1.5.6 |
+| List refs | yes, `metadata.refs` | no, `iceberg_snapshots()` has no ref column | yes, `iceberg_refs()` |
+| Read a snapshot by ref name | yes, `scan().use_ref(name)` | no, `AT (VERSION => 'name')` fails with `Could not convert string 'name' to INT64` | no, see duckdb/duckdb-iceberg#1252 |
+| Create or remove a tag or branch | yes, `manage_snapshots()` | no | no |
+| Write to a branch | yes, `append(df, branch=name)` | no, every write goes to `main` | no |
+| Fast-forward `main` to a branch | yes, `set_current_snapshot(ref_name=name)` | no | no |
+
+pyiceberg 0.12.0 fails to open a format version 3 table with a geometry column. It reports `Could not parse geometry(ogc:crs84) into a GeometryType`. For such a table, a writer sets the tag with a REST `set-snapshot-ref` commit, which every REST catalog accepts.
 
 
 ### v3 geometry support today

@@ -44,6 +44,7 @@
   "iceberg:metadata_location": "./iceberg/metadata/v1.metadata.json",
   "iceberg:format_version": 3,
   "iceberg:current_snapshot_id": "4358210771845678999",
+  "iceberg:ref": "v1.0.0",
   "assets": {
     "data": {
       "href": "./boston-open-space.parquet",
