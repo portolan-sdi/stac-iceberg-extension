@@ -7,10 +7,26 @@
 - **Field Name Prefix:** iceberg
 - **Scope:** Collection
 - **[Extension Maturity Classification](https://github.com/radiantearth/stac-spec/tree/master/extensions#extension-maturity):** Proposal
+- **Owner**: @cayetanobv @nlebovits
 
 This extension adds [Apache Iceberg](https://iceberg.apache.org/) table metadata to STAC Collections, enabling clients to discover and connect to Iceberg tables for querying geospatial data via PyIceberg, DuckDB, Spark, or BigQuery.
 
+- Examples:
+  - [Collection example](examples/collection.json): Shows a static Iceberg catalog on object storage in a STAC Collection
+  - [Portolan Collection example](examples/portolan-collection.json): Shows a Portolan Collection with a GeoParquet file and a static Iceberg table over the same file
+- [JSON Schema](json-schema/schema.json)
+- [Changelog](./CHANGELOG.md)
+
 ## Fields
+
+The fields in the table below can be used in these parts of STAC documents:
+
+- [ ] Catalogs
+- [x] Collections
+- [ ] Item Properties (incl. Summaries in Collections)
+- [ ] Assets (for both Collections and Items, incl. Item Asset Definitions in Collections and Asset Templates)
+- [ ] Links (incl. Link Templates)
+- [ ] Bands
 
 | Field Name | Type | Description |
 |------------|------|-------------|
