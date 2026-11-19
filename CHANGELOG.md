@@ -20,6 +20,9 @@ takes a major version.
   `iceberg:current_snapshot_id` with DuckDB, and where it reads the table when
   the pinned metadata file is gone. It also gives the storage secret that the
   manifest paths need.
+- README links to the examples, the JSON Schema, and the changelog, an Owner
+  line, and the list of STAC objects that accept the fields. The README now
+  follows the STAC extension template.
 
 ### Fixed
 
