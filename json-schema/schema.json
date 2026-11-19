@@ -68,6 +68,10 @@
     },
     "fields": {
       "type": "object",
+      "$comment": "iceberg:ref names the tag on iceberg:current_snapshot_id, so it has no meaning without that id.",
+      "dependencies": {
+        "iceberg:ref": ["iceberg:current_snapshot_id"]
+      },
       "properties": {
         "iceberg:catalog_type": {
           "type": "string",
@@ -103,7 +107,11 @@
         "iceberg:current_snapshot_id": {
           "type": "string",
           "pattern": "^-?[0-9]+$",
-          "description": "Current snapshot ID for reproducibility. Iceberg snapshot IDs are 64-bit, so this is serialized as a string to avoid precision loss in JSON parsers (e.g. JavaScript) that round integers above 2^53."
+          "description": "The snapshot the Collection describes, as a string. It is the published snapshot. It can differ from the head of 'main'. Iceberg snapshot IDs are 64-bit, so the value is a string to avoid precision loss in JSON parsers (e.g. JavaScript) that round integers above 2^53."
+        },
+        "iceberg:ref": {
+          "type": "string",
+          "description": "The name of a tag in the table 'refs' that points at iceberg:current_snapshot_id. The publisher chooses the name, for example 'published' or the version 'v1.2.0'. Snapshot expiry keeps a tagged snapshot. Omit the field when the published snapshot has no tag. A reader selects the snapshot by iceberg:current_snapshot_id, not by this name."
         },
         "iceberg:partition_spec": {
           "type": "array",
